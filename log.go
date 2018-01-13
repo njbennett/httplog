@@ -10,9 +10,9 @@ type Logger interface {
 	Log(req *http.Request, elapsed time.Duration, status int)
 }
 
-type STDLog struct{}
+type StandardOut struct{}
 
-func (_ STDLog) Log(req *http.Request, elapsed time.Duration, status int) {
+func (_ StandardOut) Log(r *http.Request, elapsed time.Duration, status int) {
 	log.Printf("HTTP\t%-3d\t\t%s\t%s\t%s", status, elapsed, r.Method, r.URL.Path)
 }
 
@@ -32,7 +32,7 @@ func (r *logRecord) WriteHeader(status int) {
 }
 
 // WrapHandler implements ResponseWriter for logRecord
-// logger should allow concurent access
+// logger should allow concurent agitccess
 func Wrap(f http.Handler, logger Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		record := &logRecord{
