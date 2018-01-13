@@ -19,3 +19,14 @@ r := httptest.NewRequest(http.MethodGet, "/", nil)
 logMux.ServeHTTP(w, r)
 
 ```
+
+```
+2018/01/13 15:20:56 HTTP	200		40.384µs	GET	/
+```
+
+Output can be customized by passing a logger implementing the Logger interface.
+```go
+type Logger interface {
+	Log(req *http.Request, elapsed time.Duration, status int)
+}
+```
