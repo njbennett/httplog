@@ -43,9 +43,5 @@ func Wrap(f http.Handler, logger Logger) http.HandlerFunc {
 		f.ServeHTTP(record, r)
 
 		logger.Log(r, time.Since(start), record.status)
-
-		if record.status == http.StatusBadRequest {
-			log.Println("Bad Request ", r)
-		}
 	}
 }
