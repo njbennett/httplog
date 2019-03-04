@@ -7,7 +7,7 @@ import (
 )
 
 func JSON(req *http.Request, elapsed time.Duration, status int) {
-	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration_nanoseconds": %q, "status": %q}`+"\n", req.Method, req.URL.Path, elapsed, status)
+	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %q}`+"\n", req.Method, req.URL.Path, elapsed, status)
 }
 
 type Func func(req *http.Request, elapsed time.Duration, status int)
