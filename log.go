@@ -1,20 +1,16 @@
 package httplog
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 )
 
-type Logger interface {
-	Log(req *http.Request, elapsed time.Duration, status int)
+func JSON(req *http.Request, elapsed time.Duration, status int) {
+	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration_nanoseconds": %q, "status": %q}`+"\n", req.Method, req.URL.Path, elapsed, status)
 }
 
-type StandardOut struct{}
-
-func (_ StandardOut) Log(r *http.Request, elapsed time.Duration, status int) {
-	log.Printf("HTTP\t%-3d\t\t%s\t%s\t%s", status, elapsed, r.Method, r.URL.Path)
-}
+type Func func(req *http.Request, elapsed time.Duration, status int)
 
 type logRecord struct {
 	http.ResponseWriter
@@ -31,9 +27,10 @@ func (r *logRecord) WriteHeader(status int) {
 	r.ResponseWriter.WriteHeader(status)
 }
 
-// WrapHandler implements ResponseWriter for logRecord
-// logger should allow concurent agitccess
-func Wrap(f http.Handler, logger Logger) http.HandlerFunc {
+func Wrap(f http.Handler, logFn Func) http.HandlerFunc {
+	if logFn == nil {
+		logFn = JSON
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		record := &logRecord{
 			ResponseWriter: w,
@@ -42,6 +39,6 @@ func Wrap(f http.Handler, logger Logger) http.HandlerFunc {
 		start := time.Now()
 		f.ServeHTTP(record, r)
 
-		logger.Log(r, time.Since(start), record.status)
+		logFn(r, time.Since(start), record.status)
 	}
 }
