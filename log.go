@@ -7,7 +7,7 @@ import (
 )
 
 func JSON(req *http.Request, elapsed time.Duration, status int) {
-	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %q}`+"\n", req.Method, req.URL.Path, elapsed, status)
+	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %d}`+"\n", req.Method, req.URL.Path, elapsed, status)
 }
 
 type Func func(req *http.Request, elapsed time.Duration, status int)
@@ -27,9 +27,18 @@ func (r *logRecord) WriteHeader(status int) {
 	r.ResponseWriter.WriteHeader(status)
 }
 
-func Wrap(f http.Handler, logFn Func) http.HandlerFunc {
-	if logFn == nil {
-		logFn = JSON
+func Wrap(f http.Handler, logFns ...Func) http.HandlerFunc {
+	var fn Func
+	if len(logFns) == 0 {
+		fn = JSON
+	} else if len(logFns) == 1 {
+		fn = logFns[0]
+	} else {
+		fn = func(req *http.Request, elapsed time.Duration, status int) {
+			for _, lg := range logFns {
+				lg(req, elapsed, status)
+			}
+		}
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		record := &logRecord{
@@ -39,6 +48,6 @@ func Wrap(f http.Handler, logFn Func) http.HandlerFunc {
 		start := time.Now()
 		f.ServeHTTP(record, r)
 
-		logFn(r, time.Since(start), record.status)
+		fn(r, time.Since(start), record.status)
 	}
 }

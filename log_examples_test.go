@@ -16,7 +16,7 @@ func ExampleWrap() {
 		fmt.Fprint(w, "Hello, world!")
 	})
 
-	logMux := httplog.Wrap(mux, nil)
+	logMux := httplog.Wrap(mux)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -30,7 +30,7 @@ func TestWrap(t *testing.T) {
 		fmt.Fprint(w, "Hello, world!")
 	})
 
-	logMux := httplog.Wrap(mux, nil)
+	logMux := httplog.Wrap(mux)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
