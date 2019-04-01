@@ -1,13 +1,19 @@
 package httplog
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
-func JSON(req *http.Request, elapsed time.Duration, status int) {
-	fmt.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %d}`+"\n", req.Method, req.URL.Path, elapsed, status)
+func JSON(outLogger, errLogger *log.Logger) func(req *http.Request, elapsed time.Duration, status int) {
+	return func(req *http.Request, elapsed time.Duration, status int) {
+		if status >= 500 {
+			errLogger.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %d}`+"\n", req.Method, req.URL.Path, elapsed, status)
+		}
+		outLogger.Printf(`{"type": "HTTP_REQUEST", "method": %q, "path": %q, "duration": %q, "status": %d}`+"\n", req.Method, req.URL.Path, elapsed, status)
+	}
 }
 
 type Func func(req *http.Request, elapsed time.Duration, status int)
@@ -28,9 +34,12 @@ func (r *logRecord) WriteHeader(status int) {
 }
 
 func Wrap(f http.Handler, logFns ...Func) http.HandlerFunc {
+	outLogger := log.New(os.Stdout, "", 0)
+	errLogger := log.New(os.Stderr, "", 0)
+
 	var fn Func
 	if len(logFns) == 0 {
-		fn = JSON
+		fn = JSON(outLogger, errLogger)
 	} else if len(logFns) == 1 {
 		fn = logFns[0]
 	} else {
