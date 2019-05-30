@@ -10,9 +10,7 @@ mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
   fmt.Fprint(w, "Hello, world!")
 })
-
 logMux := httplog.Wrap(mux)
-
 w := httptest.NewRecorder()
 r := httptest.NewRequest(http.MethodGet, "/greeting", nil)
 logMux.ServeHTTP(w, r)
