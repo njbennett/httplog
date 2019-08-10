@@ -18,6 +18,7 @@ func JSON(outLogger, errLogger *log.Logger) func(req *http.Request, elapsed time
 
 type Func func(req *http.Request, elapsed time.Duration, status int)
 
+// logRecord has a response writer and a status code
 type logRecord struct {
 	http.ResponseWriter
 	status int
