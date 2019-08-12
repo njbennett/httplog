@@ -49,6 +49,7 @@ func Wrap(f http.Handler, logFns ...Func) http.HandlerFunc {
 			}
 		}
 	}
+	//it's a func!
 	return func(w http.ResponseWriter, r *http.Request) {
 		record := &logRecord{
 			ResponseWriter: w,
